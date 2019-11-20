@@ -5,13 +5,12 @@ import radar
 import string
 
 
-def insert_uses(l, a, b, c, d): #l - number of uses, a:b - avaiable inventory id's c:d - avaiable trearment id's
+def insert_uses(a, b, c, d): #a:b - avaiable inventory id's c:d - avaiable trearment id's
     inserts = "INSERT INTO Uses (inventory_id, treatment_id) VALUES\n "
 
+    l = min(min(b - a, d - c), 4)
     for k in range(l):
-        inserts +=  "({}, {}),\n".format(random.randint(a, b - 1),
-                                                 random.randint(c, d - 1)
-                                                )
+        inserts +=  "({}, {}),\n".format(a + k, c + k)
 
     inserts = inserts[:-2] + ';\n'
     return inserts
