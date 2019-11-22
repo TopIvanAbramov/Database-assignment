@@ -46,7 +46,7 @@ def insert_chat(l, emp_ssn1, emp_ssn2, pat_ssn1,
 
 
 def insert_attends(l, emp_ssn1, emp_ssn2, pat_ssn1,
-                   pat_ssn2):  # l - number of prescribes, i:j - available employee ssn, m:m - available patient ssn
+                   pat_ssn2):  # l - number of attends, i:j - available employee ssn, m:m - available patient ssn
     inserts = "INSERT INTO Attends (employee_ssn, patient_ssn, cost, description, date) VALUES\n "
 
     for k in range(l):
@@ -58,7 +58,7 @@ def insert_attends(l, emp_ssn1, emp_ssn2, pat_ssn1,
                                                             start=datetime.datetime(year=2015,
                                                                                     month=5,
                                                                                     day=24),
-                                                            stop=datetime.datetime(year=2019,
+                                                            stop=datetime.datetime(year=2016,
                                                                                    month=5,
                                                                                    day=24)
                                                         )
@@ -213,7 +213,7 @@ def insert_inventory(i):  # i - number of inventory items id's
     return inserts
 
 
-def insert_treatment_plan(n, doc_ssn1, doc_snn_2, pat_snn1, pat_snn_2):
+def insert_treatment_plan_1(n, doc_ssn1, doc_snn_2, pat_snn1, pat_snn_2):
     inserts = "INSERT INTO Treatment_plan (id, doctor_ssn, patient_ssn, discharge_date, hospitalization_date, diagnoses, procedures) VALUES \n"
     for k in range(n):
         diagnoses = random.choice(list(random_data.treatments.keys()))
@@ -241,3 +241,72 @@ def insert_treatment_plan(n, doc_ssn1, doc_snn_2, pat_snn1, pat_snn_2):
 
     inserts = inserts[:-2] + ';\n'
     return inserts
+
+def insert_treatment_plan(n, doc_ssn1, doc_snn_2, pat_snn1, pat_snn_2):
+    ans = ""
+    ids = list(range(0, n))
+    random.shuffle(ids)
+    doc_snn = []
+    for j in range(n):
+        doc_snn.append(random.randint(doc_ssn1, doc_snn_2 - 1))
+
+    pat_snn = []
+    for j in range(n):
+        pat_snn.append(random.randint(pat_snn1, pat_snn_2 - 1))
+
+    two_weeks = 1209600
+    treats = list(open("Treatments.txt"))
+    for i in range(len(treats)):
+        treats[i] = treats[i].replace("\n", "")
+
+    while treats.count(""):
+        treats.remove("")
+
+    string = ""
+    for i, pro in enumerate(treats):
+        string += "({}, '{}'),\n".format(i, pro.split(";")[0])
+    ans += "INSERT INTO Diagnoses VALUES \n" + string[:-2] + ";\n\n"
+
+    c = 0
+    string = ""
+    thing = {}
+    opthing = {}
+    for i, pro in enumerate(treats):
+        a = []
+        for e2 in pro.split(";")[1:]:
+            if (not (e2 in opthing)):
+                string += "({}, '{}'),\n".format(c, e2)
+                a.append(c)
+                opthing[e2] = c
+                c += 1
+            else:
+                a.append(opthing[e2])
+        thing[i] = a
+
+    ans += "INSERT INTO Procedures VALUES \n" + string[:-2] + ";\n\n"
+
+    string1 = ""
+    string2 = ""
+    string3 = ""
+    for i in range(n):
+        hos_date = radar.random_date(start=datetime.date(year=2015,
+                                                         month=1,
+                                                         day=1),
+                                     stop=datetime.date(year=2019,
+                                                        month=1,
+                                                        day=1))
+        timestamp = datetime.datetime.combine(hos_date, datetime.time(0, 0)).timestamp()
+        dis_date = datetime.date.fromtimestamp(timestamp + two_weeks)
+        string1 += "({}, {}, {}, '{}', '{}'),\n".format(ids[i], doc_snn[i], pat_snn[i], dis_date, hos_date)
+        illness = random.sample(range(len(treats)), 3)
+        for e in illness:
+            string2 += "({}, {}),\n".format(ids[i], e)
+            string3 += "({}, {}),\n".format(ids[i], random.choice(thing[e]))
+
+    ans += "INSERT INTO Treatment_plan VALUES\n" + string1[:-2] + ";\n\n"
+    ans += "INSERT INTO Treatment_diagnoses  VALUES\n" + string2[:-2] + ";\n\n"
+    ans += "INSERT INTO Treatment_procedures VALUES\n" + string3[:-2] + ";\n\n"
+    return ans
+
+
+#print(insert_treatment_plan(5, 1, 100, 101, 200))

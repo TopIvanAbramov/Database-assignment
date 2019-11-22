@@ -1,0 +1,12 @@
+SELECT DISTINCT employee.name, employee.surname, employee.ssn
+from attends, employee
+where attends.employee_ssn = ssn and attends.patient_ssn = 103 and ((employee.name LIKE 'L%' or employee.name LIKE 'S%') <> (employee.surname LIKE 'R%' or employee.surname LIKE 'P%'))
+
+select employee_ssn,
+       extract(year from date) as Year,
+       extract(month from date) as Month,
+       extract(hour from date) as Hour,
+       count(DISTINCT cost) as "Number of appointments"
+from attends
+group by employee_ssn, Year, Month, Hour
+
